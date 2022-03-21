@@ -51,6 +51,8 @@ class TransformerModel(nn.Module):
         self.img_embedding = ImageEmbedding()
         self.text_embedding = TextEmbedding()
         self.tf = nn.Transformer(d_model=768)
+        # 21128 词典的size
+        self.linear = nn.Linear(768, 21128)
 
     def forward(self, patch, token_ids):
         img_ebd = self.img_embedding(patch)
@@ -58,8 +60,8 @@ class TransformerModel(nn.Module):
         # batch 和 len 交换维度
         img_ebd = img_ebd.transpose(0, 1)
         txt_ebd = txt_ebd.transpose(0, 1)
-        print(txt_ebd.shape, img_ebd.shape)
-        out = self.tf(img_ebd, txt_ebd)
+        out_ebd = self.tf(img_ebd, txt_ebd)
+        out = self.linear(out_ebd)
         return out
 
 
