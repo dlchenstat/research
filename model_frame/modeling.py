@@ -27,16 +27,17 @@ class ImageEmbedding(nn.Module):
         patch_ebds = self.resnet18(patch)
         patch_ebds2 = self.linear(patch_ebds)
 
-        pos_ebd = self.pos_embedding(torch.arange(432))
+        pos_ids = torch.arange(432).to(cfg.DEVICE)
+        pos_ebd = self.pos_embedding(pos_ids)
         return pos_ebd + patch_ebds2
 
 
 class TextEmbedding(nn.Module):
-    def __init__(self, pre_train_path='/data/yangdongquan/pre_trained_model/bert-base-chinese'):
+    def __init__(self):
         super(TextEmbedding, self).__init__()
-        sd = torch.load(pre_train_path + '/pytorch_model.bin')
+        sd = torch.load(cfg.PRE_TRAIN_PATH + '/pytorch_model.bin')
         ebd_dict = sd['bert.embeddings.word_embeddings.weight']
-        self.text_embedding = text_embedding = nn.Embedding.from_pretrained(ebd_dict, freeze=False)
+        self.text_embedding = nn.Embedding.from_pretrained(ebd_dict, freeze=False)
 
     # token_ids.shape = batch*len
     # return batch*len*768
@@ -52,7 +53,7 @@ class TransformerModel(nn.Module):
         self.text_embedding = TextEmbedding()
         self.tf = nn.Transformer(d_model=768)
         # 21128 词典的size
-        self.linear = nn.Linear(768, 21128)
+        self.linear = nn.Linear(768, cfg.VOCAB_SIZE)
 
     def forward(self, patch, token_ids):
         img_ebd = self.img_embedding(patch)
@@ -61,13 +62,12 @@ class TransformerModel(nn.Module):
         img_ebd = img_ebd.transpose(0, 1)
         txt_ebd = txt_ebd.transpose(0, 1)
         out_ebd = self.tf(img_ebd, txt_ebd)
-        out = self.linear(out_ebd)
-        return out
+        logits = self.linear(out_ebd)
+        return logits
 
 
 if __name__ == '__main__':
     transformer_model = TransformerModel()
-
     dl = get_ima_txt_data_loader()
     for batch_patch, batch_tokens, batch_labels in dl:
         out = transformer_model(batch_patch, batch_tokens)

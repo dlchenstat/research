@@ -76,8 +76,8 @@ class ImgTxtDataSet(Dataset):
 
 def batch_dataset_fn(batch):
     batch_patch = torch.tensor([b[0] for b in batch], dtype=torch.float32)
-    batch_tokens = torch.tensor([b[1] for b in batch], dtype=torch.int32)
-    batch_labels = torch.tensor([b[2] for b in batch], dtype=torch.int32)
+    batch_tokens = torch.tensor([b[1] for b in batch], dtype=torch.long)
+    batch_labels = torch.tensor([b[2] for b in batch], dtype=torch.long)
     return batch_patch, batch_tokens, batch_labels
 
 
