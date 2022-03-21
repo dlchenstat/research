@@ -3,6 +3,7 @@ import os
 import cv2
 from transformers import BertTokenizer
 import config as cfg
+import torch
 
 
 class ImgTxtDataSet(Dataset):
@@ -69,10 +70,25 @@ class ImgTxtDataSet(Dataset):
         tokens, labels = self.get_text_tokens(txt_path)
         return patch, tokens, labels
 
+    def __len__(self):
+        return len(self.img_list)
+
+
+def batch_dataset_fn(batch):
+    batch_patch = torch.tensor([b[0] for b in batch])
+    batch_tokens = torch.tensor([b[1] for b in batch], dtype=torch.uint8)
+    batch_labels = torch.tensor([b[2] for b in batch], dtype=torch.uint8)
+    return batch_patch, batch_tokens, batch_labels
+
+
+def get_ima_txt_data_loader():
+    itds = ImgTxtDataSet('/data/yangdongquan/research/data', cfg.PRE_TRAIN_PATH)
+    data_iter = DataLoader(itds, shuffle=True, batch_size=cfg.BATCH_SIZE, collate_fn=batch_dataset_fn, num_workers=20)
+    return data_iter
+
 
 if __name__ == '__main__':
-    itds = ImgTxtDataSet('/data/yangdongquan/research/data', cfg.PRE_TRAIN_PATH)
-    p, t, l = itds[0]
-    print(t)
-    print(l)
-
+    dl = get_ima_txt_data_loader()
+    for batch_patch, batch_tokens, batch_labels in dl:
+        print(batch_patch.shape, batch_tokens.shape, batch_labels.shape)
+        break
