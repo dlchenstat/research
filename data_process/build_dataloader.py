@@ -91,4 +91,3 @@ if __name__ == '__main__':
     dl = get_ima_txt_data_loader()
     for batch_patch, batch_tokens, batch_labels in dl:
         print(batch_patch.shape, batch_tokens.shape, batch_labels.shape)
-        break

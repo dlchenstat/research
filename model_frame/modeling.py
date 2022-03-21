@@ -16,12 +16,12 @@ class ImageEmbedding(nn.Module):
     # return batch*432(图片拆分块数)*768
     def forward(self, img_tensor):
         img_tensor = img_tensor.permute(0, 1, 4, 2, 3)
-        batch_len_ebd = torch.zeros((cfg.BATCH_SIZE, 432, 768))
+        batch_len_ebd = []
         for i, p in enumerate(img_tensor):
             ebd = self.deal_one_page(p)
-            batch_len_ebd[i] = ebd
+            batch_len_ebd.append(ebd)
 
-        return batch_len_ebd
+        return torch.stack(batch_len_ebd, dim=0)
 
     def deal_one_page(self, patch):
         patch_ebds = self.resnet18(patch)
