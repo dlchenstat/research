@@ -15,12 +15,13 @@ for img_path in early_ocr_rs:
 
     page_text = ''
     for img_name in v['image_content']:
-        shutil.copyfile(img_path, img_save_dir + img_name)
         coor_ste = v['image_content'][img_name]
         for d in coor_ste:
             image_sentence = d['image_sentence']
             page_text += image_sentence
-
+        if len(page_text) < 10:
+            continue
+        shutil.copyfile(img_path, img_save_dir + img_name)
         file_prefix = os.path.splitext(img_name)[0]
         f = open(txt_save_dir + file_prefix + '.txt', 'w')
         f.write(page_text)
